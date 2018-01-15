@@ -22,6 +22,7 @@ import {
 import { ISlimScrollOptions } from 'ngx-slimscroll';
 
 export interface DatepickerOptions {
+  readonly?: false;
   minYear?: number; // default: current year - 30
   maxYear?: number; // default: current year + 30
   displayFormat?: string; // default: 'MMM D[,] YYYY'
@@ -69,6 +70,7 @@ export class NgDatepickerComponent implements ControlValueAccessor, OnInit, OnCh
   private positions = ['bottom-left', 'bottom-right', 'top-left', 'top-right'];
 
   innerValue: Date;
+  readonly: boolean;
   displayValue: string;
   displayFormat: string;
   date: Date;
@@ -144,6 +146,7 @@ export class NgDatepickerComponent implements ControlValueAccessor, OnInit, OnCh
     const today = new Date(); // this const was added because during my tests, I noticed that at this level this.date is undefined
     this.minYear = this.options && this.options.minYear || getYear(today) - 30;
     this.maxYear = this.options && this.options.maxYear || getYear(today) + 30;
+    this.readonly = this.options && this.options.readonly || true;
     this.displayFormat = this.options && this.options.displayFormat || 'MMM D[,] YYYY';
     this.barTitleFormat = this.options && this.options.barTitleFormat || 'MMMM YYYY';
     this.firstCalendarDay = this.options && this.options.firstCalendarDay || 0;
@@ -199,8 +202,8 @@ export class NgDatepickerComponent implements ControlValueAccessor, OnInit, OnCh
   }
 
   init(): void {
-    const start = startOfMonth(this.date);
-    const end = endOfMonth(this.date);
+    const start = startOfMonth(this.date || new Date(Date.now()));
+    const end = endOfMonth(this.date || new Date(Date.now()));
 
     this.days = eachDay(start, end).map(date => {
       return {
@@ -266,7 +269,7 @@ export class NgDatepickerComponent implements ControlValueAccessor, OnInit, OnCh
       this.date = val;
       this.innerValue = val;
       this.init();
-      this.displayValue = format(this.innerValue, this.displayFormat, this.locale);
+      this.displayValue = this.innerValue ? format(this.innerValue, this.displayFormat, this.locale) : '';
       this.barTitle = format(startOfMonth(val), this.barTitleFormat, this.locale);
     }
   }
